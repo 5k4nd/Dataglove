@@ -1,0 +1,16 @@
+#N canvas 757 72 1157 999 10;
+#X obj -69 126 cnv 15 290 160 empty empty python_interface 20 12 0
+14 -204786 -66577 0;
+#X text 35 203;
+#X text -82 16 Interface for the Solipse' Glove. Please remember to
+use the python server attached to listen to the glove via wifi. Bapt
+Abl \, 2017;
+#X obj -50 159 netreceive 4211;
+#X floatatom 3 254 5 0 0 0 - - -;
+#X floatatom -52 255 5 0 0 0 - - -;
+#X floatatom 51 254 5 0 0 0 - - -;
+#X obj -50 205 route X Y Z;
+#X connect 3 0 7 0;
+#X connect 7 0 5 0;
+#X connect 7 1 4 0;
+#X connect 7 2 6 0;

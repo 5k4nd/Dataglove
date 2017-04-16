@@ -16,7 +16,7 @@ from sys import argv
 from ast import literal_eval  # pour les cast de str vers dict
 from threading import Thread
 from time import sleep
-
+from os import system
 
 
 GLOVE_IP = "192.168.1.31"
@@ -27,10 +27,14 @@ PD_PORT = 4211
 
 
 
+def pd_send(MSG, PD_PORT):
+    system("echo '%s;' | pdsend %s" % (MSG, PD_PORT))
 
-class glove_listen(Thread):
+
+class glove_listener(Thread):
     def __init__(self, UDP_IP, UDP_PORT):
         Thread.__init__(self)
+        self.must_terminate = False
         self.sock = socket.socket(
             socket.AF_INET,     # Internet
             socket.SOCK_DGRAM   # UDP
@@ -45,6 +49,11 @@ class glove_listen(Thread):
         self.sock.bind((self.computer_ip, self.computer_port))
 
         while 1:
+            """ récupération des données
+            """
+            if self.must_terminate:
+                break
+
             got, addr = self.sock.recvfrom(1024)
             got = got.replace(" ", "")   # remove blanks
             got = literal_eval(got)      # cast str to dict
@@ -52,12 +61,26 @@ class glove_listen(Thread):
 
             if "X" in got.keys():
                 self.x_axe = float(got['X'])
-                self.x_axe = 
             if "Y" in got.keys():
                 self.y_axe = float(got['Y'])
             if "Z" in got.keys():
                 self.z_axe = float(got['Z'])
                 
+
+            """ conversion des données
+            """
+            self.x_axe = int(self.x_axe)
+            self.y_axe = int(self.y_axe)
+            self.z_axe = int(self.z_axe)
+
+            """ envoie des données à pure data
+            """
+            pd_send('X %s' % self.x_axe, PD_PORT)
+            pd_send('Y %s' % self.y_axe, PD_PORT)
+            pd_send('Z %s' % self.z_axe, PD_PORT)
+
+        print("Glove: i'm dying... TERMINATED.")
+
 
 
 
@@ -76,15 +99,15 @@ if __name__ == '__main__':
     glove_send(GLOVE_IP, "READY_TO_START")
     print("READY_TO_START packet sent to the glove!\n now listening")
 
-    receiving_thread = glove_listen(COMPUTER_IP, UDP_PORT)
+    receiving_thread = glove_listener(COMPUTER_IP, UDP_PORT)
     receiving_thread.start()
     while 1:
         try:
-            sleep(.001)
+            sleep(.1)
             print "X: %s            Y: %s           Z: %s" % (receiving_thread.x_axe, receiving_thread.y_axe, receiving_thread.z_axe)
         except KeyboardInterrupt:
             break
 
-    receiving_thread._Thread__stop()
+    receiving_thread.must_terminate = True
 
     print("THE END.")

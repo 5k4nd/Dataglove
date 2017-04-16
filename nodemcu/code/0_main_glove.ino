@@ -69,7 +69,7 @@ void loop()
    else
     digitalWrite(ledPin, HIGH);
 
-  delay(10);
+  delay(100);
 }
 
 
