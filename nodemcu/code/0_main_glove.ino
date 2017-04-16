@@ -4,15 +4,15 @@ int ledPin = D0;
 /* ####### ESP NETWORK CONFIG ####### */
 #include <WiFiUdp.h>
 
-const char* REMOTE_IP = "192.168.12.1";
+//const char* REMOTE_IP = "192.168.1.35";
+//const char* REMOTE_IP = "NULL";  // déterminé automatiquement. le python envoie un paquet au démarrage
+int REMOTE_IP = -1;
 const int REMOTE_PORT = 4210;
-const char* ssid = "Skandnet";
-const char* password = "tarteauxfraises";
+const char* ssid = "Livebox-Nougatine";  // "Skandnet"
+const char* password = "BABA1294";  // "tarteauxfraises"
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;  // local port to listen on
-//char packet[] = "";
-
 
 /* ####### ADXL config ####### */
 #include <Wire.h>
@@ -37,12 +37,12 @@ void setup()
   WiFi.begin(ssid, password); 
   while (WiFi.status() != WL_CONNECTED)
     delay(500);
+  Serial.printf("Now connect at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
 
-  // start udp
-  Udp.begin(localUdpPort);
+  // start udp connection with computer
+  udp_computer_connect();
 
-  // print success
-  Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
+
 }
 
 
@@ -76,6 +76,34 @@ void loop()
 
 
 
+char incomingPacket[255];
+void udp_computer_connect()
+{
+  // on ouvre le port UDP
+  Udp.begin(localUdpPort);
+  
+  // on attend un paquet du PC
+  Serial.println("waiting for computer call");
+  while(REMOTE_IP==-1)
+  {
+    int packetSize = Udp.parsePacket();
+    if (packetSize)
+    {
+      Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+      int len = Udp.read(incomingPacket, 255);
+      if (len > 0)
+      {
+        incomingPacket[len] = 0;
+      }
+      
+      // si le paquet reçu est le bon "RESDY_TO_START", on est tout bon !
+      Serial.printf("UDP packet contents: %s\n", incomingPacket);
+      if (String(incomingPacket)=="READY_TO_START")
+        REMOTE_IP = Udp.remoteIP();
+    }
+    delay(500);
+  }
+}
 
 
 
