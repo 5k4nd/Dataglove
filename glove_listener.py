@@ -1,6 +1,8 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+WARNING! IT'S PYTHON 3 !
+
     you should:
     1) power on the glove
     2) start pd
@@ -12,12 +14,6 @@ ToDo:
 
 """
 import socket
-from sys import argv
-from ast import literal_eval  # pour les cast de str vers dict
-from threading import Thread
-from time import sleep
-from os import system
-
 
 GLOVE_IP = "192.168.1.31"
 UDP_PORT = 4210
@@ -26,9 +22,25 @@ COMPUTER_IP = "192.168.1.35"
 PD_PORT = 4211
 
 
+from ast import literal_eval  # pour les cast de str vers dict
+from sys import argv
+from threading import Thread
+from time import sleep
+from os import system
+
+
+import argparse
+from pythonosc import osc_message_builder
+from pythonosc import udp_client
+
+
+
+
+
 
 def pd_send(MSG, PD_PORT):
     system("echo '%s;' | pdsend %s" % (MSG, PD_PORT))
+
 
 
 class glove_listener(Thread):
@@ -55,6 +67,7 @@ class glove_listener(Thread):
                 break
 
             got, addr = self.sock.recvfrom(1024)
+            got = got.decode('utf-8')    # python3
             got = got.replace(" ", "")   # remove blanks
             got = literal_eval(got)      # cast str to dict
             # print got
@@ -73,11 +86,15 @@ class glove_listener(Thread):
             self.y_axe = int(self.y_axe)
             self.z_axe = int(self.z_axe)
 
-            """ envoie des données à pure data
+            """ envoie des données à MAX
             """
-            pd_send('X %s' % self.x_axe, PD_PORT)
-            pd_send('Y %s' % self.y_axe, PD_PORT)
-            pd_send('Z %s' % self.z_axe, PD_PORT)
+            #pd_send('X %s' % self.x_axe, PD_PORT)
+            #pd_send('Y %s' % self.y_axe, PD_PORT)
+            #pd_send('Z %s' % self.z_axe, PD_PORT)
+            client.send_message('X', self.x_axe)
+            client.send_message('Y', self.y_axe)
+            client.send_message('Z', self.z_axe)
+
 
         print("Glove: i'm dying... TERMINATED.")
 
@@ -90,12 +107,23 @@ def glove_send(GLOVE_IP, MSG):
         socket.AF_INET,     # Internet
         socket.SOCK_DGRAM   # UDP
     )
-    sock.sendto(MSG, (GLOVE_IP, UDP_PORT))
+    sock.sendto(MSG.encode('utf-8'), (GLOVE_IP, UDP_PORT))
+
+def start_max_client():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=7400)
+    args = parser.parse_args()
+    client = udp_client.SimpleUDPClient(args.ip, args.port)
+    return client
+
 
 
 if __name__ == '__main__':
+    client = start_max_client()
+
     print("entry when pure data is ready to start")
-    entry = raw_input()
+    entry = input()
     glove_send(GLOVE_IP, "READY_TO_START")
     print("READY_TO_START packet sent to the glove!\n now listening")
 
@@ -104,10 +132,11 @@ if __name__ == '__main__':
     while 1:
         try:
             sleep(.1)
-            print "X: %s            Y: %s           Z: %s" % (receiving_thread.x_axe, receiving_thread.y_axe, receiving_thread.z_axe)
+            print ("X: %s            Y: %s           Z: %s" % (receiving_thread.x_axe, receiving_thread.y_axe, receiving_thread.z_axe))
         except KeyboardInterrupt:
             break
 
     receiving_thread.must_terminate = True
 
+    sleep(.7)
     print("THE END.")
