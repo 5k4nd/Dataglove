@@ -8,8 +8,8 @@ int ledPin = D0;
 //const char* REMOTE_IP = "NULL";  // déterminé automatiquement. le python envoie un paquet au démarrage
 int REMOTE_IP = -1;
 const int REMOTE_PORT = 4210;
-const char* ssid = "Livebox-Nougatine";  // "Skandnet"
-const char* password = "BABA1294";  // "tarteauxfraises"
+const char* ssid = "Livebox-Nougatine";  // "Livebox-Nougatine" "Skandnet" "Connectify-glove"
+const char* password = "BABA1294" ;  // "BABA1294" "tarteauxfraises" "pilipilou"
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;  // local port to listen on
@@ -58,9 +58,7 @@ void loop()
 
   /* send via udp with python dict structure */
   Udp.beginPacket(REMOTE_IP, REMOTE_PORT);
-  Udp.write(
-    ('{'+packet_x+packet_y+packet_z+'}').c_str()
-   );
+  Udp.write( ('{'+packet_x+packet_y+packet_z+'}').c_str() );
   Udp.endPacket();
 
 

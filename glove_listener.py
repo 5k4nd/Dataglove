@@ -15,10 +15,11 @@ ToDo:
 """
 import socket
 
-GLOVE_IP = "192.168.1.31"
+# GLOVE_IP = "192.168.1.31"
+GLOVE_IP = "192.168.12.209"
 UDP_PORT = 4210
 COMPUTER_IP = socket.gethostbyname(socket.gethostname())
-COMPUTER_IP = "192.168.1.35"
+# COMPUTER_IP = "192.168.1.35"
 PD_PORT = 4211
 
 
