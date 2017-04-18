@@ -94,10 +94,12 @@ void udp_computer_connect()
         incomingPacket[len] = 0;
       }
       
-      // si le paquet reçu est le bon "RESDY_TO_START", on est tout bon !
+      // si le paquet reçu est le bon "READY_TO_START", on est tout bon !
       Serial.printf("UDP packet contents: %s\n", incomingPacket);
       if (String(incomingPacket)=="READY_TO_START")
         REMOTE_IP = Udp.remoteIP();
+        Serial.printf("Starting streaming to %s, port %d\n", Udp.remoteIP().toString().c_str(), String(REMOTE_PORT).c_str());
+        //Serial.println(REMOTE_IP.toString());
     }
     delay(500);
   }
