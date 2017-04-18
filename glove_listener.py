@@ -15,13 +15,19 @@ ToDo:
 """
 import socket
 
-GLOVE_IP = "192.168.1.31"
-# GLOVE_IP = "192.168.12.209"
+#GLOVE_IP = "192.168.83.101"
+# GLOVE_IP = "192.168.1.31"
+GLOVE_IP = "192.168.12.209"
+
+# COMPUTER_IP = "192.168.1.35"
+COMPUTER_IP = "192.168.12.1"
+
+
 UDP_PORT = 4210
-# COMPUTER_IP = socket.gethostbyname(socket.gethostname())
-COMPUTER_IP = "192.168.1.35"
-# COMPUTER_IP = "192.168.12.1"
-PD_PORT = 4211
+# VVV doesn't work!
+#COMPUTER_IP = socket.gethostbyname(socket.getfqdn())
+#COMPUTER_IP = "127.1"
+MAX_PORT = 4211
 
 
 from ast import literal_eval  # pour les cast de str vers dict
@@ -43,6 +49,14 @@ from pythonosc import udp_client
 def pd_send(MSG, PD_PORT):
     system("echo '%s;' | pdsend %s" % (MSG, PD_PORT))
 
+
+def start_max_client():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=MAX_PORT)
+    args = parser.parse_args()
+    client = udp_client.SimpleUDPClient(args.ip, args.port)
+    return client
 
 
 class glove_listener(Thread):
@@ -85,14 +99,27 @@ class glove_listener(Thread):
             """ conversion des données
             """
             self.x_axe = int(self.x_axe)
-            self.y_axe = int(self.y_axe)
+            
+            yaxe = self.y_axe
+            if yaxe < -5:
+                yaxe = -5
+            if yaxe > 10:
+                yaxe = 10
+            yaxe += 5
+            yaxe /= 15
+            yaxe *= 255
+            self.y_axe = int(yaxe)
+    
+            
             self.z_axe = int(self.z_axe)
+            
 
             """ envoie des données à MAX
             """
             #pd_send('X %s' % self.x_axe, PD_PORT)
             #pd_send('Y %s' % self.y_axe, PD_PORT)
             #pd_send('Z %s' % self.z_axe, PD_PORT)
+
             client.send_message('X', self.x_axe)
             client.send_message('Y', self.y_axe)
             client.send_message('Z', self.z_axe)
@@ -110,14 +137,6 @@ def glove_send(GLOVE_IP, MSG):
         socket.SOCK_DGRAM   # UDP
     )
     sock.sendto(MSG.encode('utf-8'), (GLOVE_IP, UDP_PORT))
-
-def start_max_client():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ip", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=7400)
-    args = parser.parse_args()
-    client = udp_client.SimpleUDPClient(args.ip, args.port)
-    return client
 
 
 
