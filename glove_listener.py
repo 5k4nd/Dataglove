@@ -97,7 +97,14 @@ class glove_listener(Thread):
 
             """ conversion des données
             """
-            self.x_axe = int(self.x_axe)
+            xaxe = self.x_axe
+            if xaxe < -5:
+                xaxe = -5
+            if xaxe > 10:
+                xaxe = 10
+            xaxe += 5
+            xaxe /= 15.0
+            self.x_axe = float("{0:.2f}".format(xaxe))
             
             yaxe = self.y_axe
             if yaxe < -5:
@@ -105,9 +112,8 @@ class glove_listener(Thread):
             if yaxe > 10:
                 yaxe = 10
             yaxe += 5
-            yaxe /= 15
-            yaxe *= 255
-            self.y_axe = int(yaxe)
+            yaxe /= 15.0
+            self.y_axe = float("{0:.2f}".format(yaxe))
     
             
             self.z_axe = int(self.z_axe)
