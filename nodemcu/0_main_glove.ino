@@ -9,7 +9,8 @@ int ledPin = D0;
 int REMOTE_IP = -1;
 const int REMOTE_PORT = 4210;
 //const char* ssid = "Skandnet";
-const char* ssid = "Connectify-glove";  // "Livebox-Nougatine" "Skandnet" "Connectify-glove"
+const char* ssid = "L'Antre des Anges";
+//const char* ssid = "Connectify-glove";  // "Livebox-Nougatine" "Skandnet" "Connectify-glove"
 //const char* password = "tarteauxfraises" ;
 const char* password = "pilipilou" ;  // "BABA1294" "tarteauxfraises" "pilipilou"
 
@@ -83,7 +84,7 @@ void udp_computer_connect()
   Udp.begin(localUdpPort);
   
   // on attend un paquet du PC
-  Serial.println("waiting for computer call");
+  Serial.println("waiting for computer call...");
   while(REMOTE_IP==-1)
   {
     int packetSize = Udp.parsePacket();

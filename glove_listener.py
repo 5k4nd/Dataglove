@@ -16,11 +16,11 @@ ToDo:
 import socket
 
 
-GLOVE_IP = "192.168.83.101"
+GLOVE_IP = "192.168.1.12"
 #GLOVE_IP = "192.168.1.31"
 #GLOVE_IP = "192.168.12.209"
 #COMPUTER_IP = "192.168.1.35"
-COMPUTER_IP = "192.168.83.1"
+COMPUTER_IP = "192.168.1.43"
 
 
 UDP_PORT = 4210
@@ -41,7 +41,7 @@ import argparse
 from pythonosc import osc_message_builder
 from pythonosc import udp_client
 
-
+from math import sqrt, acos, pi
 
 
 
@@ -99,37 +99,56 @@ class glove_listener(Thread):
             """ conversion des données
             """
             xaxe = self.x_axe
-            if xaxe < -5:
-                xaxe = -5
-            if xaxe > 10:
-                xaxe = 10
-            xaxe += 5
-            xaxe /= 15.0
-            self.x_axe = float("{0:.2f}".format(xaxe))
-
-            
             yaxe = self.y_axe
-            if yaxe < -5:
-                yaxe = -5
-            if yaxe > 10:
-                yaxe = 10
-            yaxe += 5
-            yaxe /= 15.0
-            self.y_axe = float("{0:.2f}".format(yaxe))
-    
+            zaxe = self.z_axe
+            main_vector = sqrt(xaxe**2 + yaxe**2 + zaxe**2)
+
+
+
+            # if xaxe < -5:
+            #     xaxe = -5
+            # if xaxe > 10:
+            #     xaxe = 10
+            # xaxe += 5
+            # xaxe /= 15.0
+            xaxe = acos(xaxe/main_vector)
+            xaxe = xaxe *180/pi
+
+
+
             
-            self.z_axe = int(self.z_axe)
+            # if yaxe < -5:
+            #     yaxe = -5
+            # if yaxe > 10:
+            #     yaxe = 10
+            # yaxe += 5
+            # yaxe /= 15.0
+            yaxe = acos(yaxe/main_vector)
+            yaxe = yaxe *180/pi
+    
+
+
+
+            xaxe = float("{0:.2f}".format(xaxe))
+            self.x_axe = xaxe
+            yaxe = float("{0:.2f}".format(yaxe))
+            self.y_axe = yaxe
+            zaxe = float("{0:.2f}".format(zaxe))
+            self.z_axe = self.z_axe
             
 
-            """ envoie des données à MAX
+
+
+
+            """ envoie des données à PD/MAX
             """
             #pd_send('X %s' % self.x_axe, PD_PORT)
             #pd_send('Y %s' % self.y_axe, PD_PORT)
             #pd_send('Z %s' % self.z_axe, PD_PORT)
 
-            client.send_message('X', self.x_axe)
-            client.send_message('Y', self.y_axe)
-            client.send_message('Z', self.z_axe)
+            # client.send_message('X', self.x_axe)
+            # client.send_message('Y', self.y_axe)
+            # client.send_message('Z', self.z_axe)
 
 
         print("Glove: i'm dying... TERMINATED.")
@@ -160,7 +179,7 @@ if __name__ == '__main__':
     while 1:
         try:
             sleep(.1)
-            print ("X: %s            Y: %s           Z: %s" % (receiving_thread.x_axe, receiving_thread.y_axe, receiving_thread.z_axe))
+            print ("X: %s            Y: %s" % (receiving_thread.x_axe, receiving_thread.y_axe))
         except KeyboardInterrupt:
             break
 
